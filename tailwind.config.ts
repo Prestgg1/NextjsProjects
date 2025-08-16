@@ -52,6 +52,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				pharmacy: {
+					primary: 'hsl(var(--pharmacy-primary))',
+					secondary: 'hsl(var(--pharmacy-secondary))',
+					accent: 'hsl(var(--pharmacy-accent))',
+					light: 'hsl(var(--pharmacy-light))',
+					dark: 'hsl(var(--pharmacy-dark))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -67,6 +74,14 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			backgroundImage: {
+				'gradient-pharmacy': 'var(--gradient-pharmacy)',
+				'gradient-subtle': 'var(--gradient-subtle)'
+			},
+			boxShadow: {
+				'pharmacy': 'var(--shadow-pharmacy)',
+				'card': 'var(--shadow-card)'
 			},
 			keyframes: {
 				'accordion-down': {
