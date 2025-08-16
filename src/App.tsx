@@ -8,6 +8,8 @@ import Dashboard from "./pages/Dashboard";
 import Klinikalar from "./pages/Klinikalar";
 import Hekimler from "./pages/Hekimler";
 import Aptekler from "./pages/Aptekler";
+import Musteriler from "./pages/Musteriler";
+import Sifarisler from "./pages/Sifarisler";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +25,8 @@ const App = () => (
           <Route path="/klinikalar" element={<AdminLayout><Klinikalar /></AdminLayout>} />
           <Route path="/hekimler" element={<AdminLayout><Hekimler /></AdminLayout>} />
           <Route path="/aptekler" element={<AdminLayout><Aptekler /></AdminLayout>} />
+          <Route path="/musteriler" element={<AdminLayout><Musteriler /></AdminLayout>} />
+          <Route path="/sifarisler" element={<AdminLayout><Sifarisler /></AdminLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

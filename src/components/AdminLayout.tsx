@@ -8,7 +8,9 @@ import {
   Store, 
   Menu, 
   X,
-  LayoutDashboard 
+  LayoutDashboard,
+  Users,
+  ShoppingCart
 } from "lucide-react";
 
 const sidebarItems = [
@@ -31,6 +33,16 @@ const sidebarItems = [
     title: "Apteklər",
     href: "/aptekler", 
     icon: Store,
+  },
+  {
+    title: "Müştərilər",
+    href: "/musteriler",
+    icon: Users,
+  },
+  {
+    title: "Şifarişlər",
+    href: "/sifarisler",
+    icon: ShoppingCart,
   },
 ];
 
