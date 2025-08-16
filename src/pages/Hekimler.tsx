@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Search, MapPin, Phone, Star, Calendar, UserCheck } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, MapPin, Phone, Star, Calendar, UserCheck, Upload } from "lucide-react";
 
 const hekimler = [
   {
@@ -83,6 +86,15 @@ const hekimler = [
 
 export default function Hekimler() {
   const [axtar, setAxtar] = useState("");
+  const [modalAciq, setModalAciq] = useState(false);
+  const [yeniHekim, setYeniHekim] = useState({
+    ad: "",
+    telefon: "",
+    tecrube: "",
+    klinika: "",
+    ixtisas: "",
+    sekil: null as File | null
+  });
   
   const filteredHekimler = hekimler.filter(hekim =>
     hekim.ad.toLowerCase().includes(axtar.toLowerCase()) ||
@@ -100,10 +112,121 @@ export default function Hekimler() {
             Qeydiyyatlı həkimlər və mütəxəssislər
           </p>
         </div>
-        <Button className="bg-gradient-pharmacy hover:opacity-90 text-primary-foreground">
-          <Plus className="h-4 w-4 mr-2" />
-          Yeni Həkim
-        </Button>
+        <Dialog open={modalAciq} onOpenChange={setModalAciq}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-pharmacy hover:opacity-90 text-primary-foreground">
+              <Plus className="h-4 w-4 mr-2" />
+              Yeni Həkim
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Yeni Həkim Əlavə Et</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="ad">Ad Soyad</Label>
+                <Input
+                  id="ad"
+                  placeholder="Dr. Ad Soyad"
+                  value={yeniHekim.ad}
+                  onChange={(e) => setYeniHekim({...yeniHekim, ad: e.target.value})}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="sekil">Şəkil</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="sekil"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setYeniHekim({...yeniHekim, sekil: e.target.files?.[0] || null})}
+                    className="hidden"
+                  />
+                  <Label 
+                    htmlFor="sekil" 
+                    className="flex items-center gap-2 px-3 py-2 border rounded-md cursor-pointer hover:bg-accent"
+                  >
+                    <Upload className="h-4 w-4" />
+                    {yeniHekim.sekil ? yeniHekim.sekil.name : "Şəkil seçin"}
+                  </Label>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="telefon">Telefon Nömrəsi</Label>
+                <Input
+                  id="telefon"
+                  placeholder="+994 55 123 4567"
+                  value={yeniHekim.telefon}
+                  onChange={(e) => setYeniHekim({...yeniHekim, telefon: e.target.value})}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="tecrube">Təcrübə</Label>
+                <Input
+                  id="tecrube"
+                  placeholder="10 il"
+                  value={yeniHekim.tecrube}
+                  onChange={(e) => setYeniHekim({...yeniHekim, tecrube: e.target.value})}
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="klinika">Klinika</Label>
+                <Select value={yeniHekim.klinika} onValueChange={(value) => setYeniHekim({...yeniHekim, klinika: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Klinika seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="merkezi-tibb">Mərkəzi Tibb Mərkəzi</SelectItem>
+                    <SelectItem value="saglamlig-klinikasi">Sağlamlıq Klinikası</SelectItem>
+                    <SelectItem value="aile-hekimligi">Aile Həkimliği Mərkəzi</SelectItem>
+                    <SelectItem value="muasir-diaqnostika">Müasir Diaqnostika</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="ixtisas">İxtisas Sahəsi</Label>
+                <Select value={yeniHekim.ixtisas} onValueChange={(value) => setYeniHekim({...yeniHekim, ixtisas: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="İxtisas seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="kardiologiya">Kardiologiya</SelectItem>
+                    <SelectItem value="ginekologiya">Ginekologiya</SelectItem>
+                    <SelectItem value="nevrologiya">Nevrologiya</SelectItem>
+                    <SelectItem value="pediatriya">Pediatriya</SelectItem>
+                    <SelectItem value="umumi-tebabet">Ümumi təbabət</SelectItem>
+                    <SelectItem value="dermatologiya">Dermatologiya</SelectItem>
+                    <SelectItem value="ortopediya">Ortopediya</SelectItem>
+                    <SelectItem value="oftalmologiya">Oftalmologiya</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setModalAciq(false)}>
+                Ləğv et
+              </Button>
+              <Button 
+                className="bg-gradient-pharmacy hover:opacity-90 text-primary-foreground"
+                onClick={() => {
+                  // Burada yeni həkimi əlavə etmək məntıqı olacaq
+                  console.log("Yeni həkim məlumatları:", yeniHekim);
+                  setModalAciq(false);
+                  setYeniHekim({ad: "", telefon: "", tecrube: "", klinika: "", ixtisas: "", sekil: null});
+                }}
+              >
+                Əlavə et
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Search and stats */}

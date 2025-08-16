@@ -112,7 +112,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           <div className="border-t p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <div className="h-2 w-2 rounded-full bg-pharmacy-accent" />
-              <span>Apteka İdarə Sistemi</span>
+              <span>ŞəfaTapp İdarə sistemi</span>
             </div>
           </div>
         </div>
