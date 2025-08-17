@@ -10,7 +10,8 @@ import {
   X,
   LayoutDashboard,
   Users,
-  ShoppingCart
+  ShoppingCart,
+  LogOut
 } from "lucide-react";
 
 const sidebarItems = [
@@ -48,9 +49,10 @@ const sidebarItems = [
 
 interface AdminLayoutProps {
   children: React.ReactNode;
+  onLogout?: () => void;
 }
 
-export const AdminLayout = ({ children }: AdminLayoutProps) => {
+export const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -135,6 +137,17 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <div className="text-sm text-muted-foreground">
               Salam, Administrator
             </div>
+            {onLogout && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onLogout}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Çıxış
+              </Button>
+            )}
           </div>
         </header>
 
