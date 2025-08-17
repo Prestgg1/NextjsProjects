@@ -57,17 +57,18 @@ const initialIxtisaslar: Ixtisas[] = [
 
 export default function Ixtisaslar() {
   const [ixtisaslar, setIxtisaslar] = useState<Ixtisas[]>(initialIxtisaslar);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [yeniIxtisas, setYeniIxtisas] = useState({
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingIxtisas, setEditingIxtisas] = useState<Ixtisas | null>(null);
+  const [formData, setFormData] = useState({
     ad: '',
     sekil: ''
   });
   const { toast } = useToast();
 
-  const handleAddIxtisas = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!yeniIxtisas.ad.trim() || !yeniIxtisas.sekil.trim()) {
+    if (!formData.ad.trim() || !formData.sekil.trim()) {
       toast({
         title: "Xəta",
         description: "Bütün sahələri doldurun",
@@ -76,21 +77,51 @@ export default function Ixtisaslar() {
       return;
     }
 
-    const newIxtisas: Ixtisas = {
-      id: Date.now(),
-      ad: yeniIxtisas.ad.trim(),
-      sekil: yeniIxtisas.sekil.trim(),
-      hekimSayi: 0
-    };
+    if (editingIxtisas) {
+      // Edit existing
+      setIxtisaslar(ixtisaslar.map(ixtisas => 
+        ixtisas.id === editingIxtisas.id 
+          ? { ...ixtisas, ad: formData.ad.trim(), sekil: formData.sekil.trim() }
+          : ixtisas
+      ));
+      toast({
+        title: "Uğurlu!",
+        description: "İxtisas yeniləndi",
+      });
+    } else {
+      // Add new
+      const newIxtisas: Ixtisas = {
+        id: Date.now(),
+        ad: formData.ad.trim(),
+        sekil: formData.sekil.trim(),
+        hekimSayi: 0
+      };
+      setIxtisaslar([...ixtisaslar, newIxtisas]);
+      toast({
+        title: "Uğurlu!",
+        description: "Yeni ixtisas əlavə edildi",
+      });
+    }
 
-    setIxtisaslar([...ixtisaslar, newIxtisas]);
-    setYeniIxtisas({ ad: '', sekil: '' });
-    setIsAddModalOpen(false);
-    
-    toast({
-      title: "Uğurlu!",
-      description: "Yeni ixtisas əlavə edildi",
-    });
+    closeModal();
+  };
+
+  const openAddModal = () => {
+    setEditingIxtisas(null);
+    setFormData({ ad: '', sekil: '' });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (ixtisas: Ixtisas) => {
+    setEditingIxtisas(ixtisas);
+    setFormData({ ad: ixtisas.ad, sekil: ixtisas.sekil });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingIxtisas(null);
+    setFormData({ ad: '', sekil: '' });
   };
 
   const handleDeleteIxtisas = (id: number) => {
@@ -111,28 +142,33 @@ export default function Ixtisaslar() {
           </p>
         </div>
         
-        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-pharmacy hover:opacity-90">
+            <Button 
+              className="bg-gradient-pharmacy hover:opacity-90"
+              onClick={openAddModal}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Yeni İxtisas
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle className="text-pharmacy-dark">Yeni İxtisas Əlavə Et</DialogTitle>
+              <DialogTitle className="text-pharmacy-dark">
+                {editingIxtisas ? 'İxtisası Redaktə Et' : 'Yeni İxtisas Əlavə Et'}
+              </DialogTitle>
               <DialogDescription>
-                Yeni tibbi ixtisas əlavə etmək üçün aşağıdakı məlumatları doldurun
+                {editingIxtisas ? 'İxtisas məlumatlarını yeniləyin' : 'Yeni tibbi ixtisas əlavə etmək üçün aşağıdakı məlumatları doldurun'}
               </DialogDescription>
             </DialogHeader>
             
-            <form onSubmit={handleAddIxtisas} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="ad" className="text-pharmacy-dark">İxtisas Adı</Label>
                 <Input
                   id="ad"
-                  value={yeniIxtisas.ad}
-                  onChange={(e) => setYeniIxtisas({ ...yeniIxtisas, ad: e.target.value })}
+                  value={formData.ad}
+                  onChange={(e) => setFormData({ ...formData, ad: e.target.value })}
                   placeholder="məs: Kardioloji"
                   className="border-input focus:border-pharmacy-primary"
                 />
@@ -142,15 +178,15 @@ export default function Ixtisaslar() {
                 <Label htmlFor="sekil" className="text-pharmacy-dark">Şəkil Linki</Label>
                 <Input
                   id="sekil"
-                  value={yeniIxtisas.sekil}
-                  onChange={(e) => setYeniIxtisas({ ...yeniIxtisas, sekil: e.target.value })}
+                  value={formData.sekil}
+                  onChange={(e) => setFormData({ ...formData, sekil: e.target.value })}
                   placeholder="https://example.com/image.jpg"
                   className="border-input focus:border-pharmacy-primary"
                 />
-                {yeniIxtisas.sekil && (
+                {formData.sekil && (
                   <div className="flex items-center space-x-2 mt-2">
                     <Avatar className="w-10 h-10">
-                      <AvatarImage src={yeniIxtisas.sekil} alt="Önizləmə" />
+                      <AvatarImage src={formData.sekil} alt="Önizləmə" />
                       <AvatarFallback>
                         <Stethoscope className="w-5 h-5" />
                       </AvatarFallback>
@@ -164,7 +200,7 @@ export default function Ixtisaslar() {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => setIsAddModalOpen(false)}
+                  onClick={closeModal}
                 >
                   Ləğv et
                 </Button>
@@ -172,7 +208,7 @@ export default function Ixtisaslar() {
                   type="submit"
                   className="bg-gradient-pharmacy hover:opacity-90"
                 >
-                  Əlavə et
+                  {editingIxtisas ? 'Yenilə' : 'Əlavə et'}
                 </Button>
               </div>
             </form>
@@ -212,6 +248,7 @@ export default function Ixtisaslar() {
                   size="sm"
                   variant="ghost"
                   className="text-pharmacy-primary hover:bg-pharmacy-light"
+                  onClick={() => openEditModal(ixtisas)}
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
