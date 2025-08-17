@@ -11,7 +11,8 @@ import {
   LayoutDashboard,
   Users,
   ShoppingCart,
-  LogOut
+  LogOut,
+  Stethoscope
 } from "lucide-react";
 
 const sidebarItems = [
@@ -31,13 +32,18 @@ const sidebarItems = [
     icon: UserCheck,
   },
   {
+    title: "İxtisaslar",
+    href: "/ixtisaslar", 
+    icon: Stethoscope,
+  },
+  {
     title: "Apteklər",
-    href: "/aptekler", 
+    href: "/aptekler",
     icon: Store,
   },
   {
     title: "Müştərilər",
-    href: "/musteriler",
+    href: "/musteriler", 
     icon: Users,
   },
   {

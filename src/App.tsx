@@ -9,6 +9,7 @@ import { LoginPage } from "./components/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import Klinikalar from "./pages/Klinikalar";
 import Hekimler from "./pages/Hekimler";
+import Ixtisaslar from "./pages/Ixtisaslar";
 import Aptekler from "./pages/Aptekler";
 import Musteriler from "./pages/Musteriler";
 import Sifarisler from "./pages/Sifarisler";
@@ -86,6 +87,7 @@ const App = () => {
             <Route path="/" element={<AdminLayout onLogout={handleLogout}><Dashboard /></AdminLayout>} />
             <Route path="/klinikalar" element={<AdminLayout onLogout={handleLogout}><Klinikalar /></AdminLayout>} />
             <Route path="/hekimler" element={<AdminLayout onLogout={handleLogout}><Hekimler /></AdminLayout>} />
+            <Route path="/ixtisaslar" element={<AdminLayout onLogout={handleLogout}><Ixtisaslar /></AdminLayout>} />
             <Route path="/aptekler" element={<AdminLayout onLogout={handleLogout}><Aptekler /></AdminLayout>} />
             <Route path="/musteriler" element={<AdminLayout onLogout={handleLogout}><Musteriler /></AdminLayout>} />
             <Route path="/sifarisler" element={<AdminLayout onLogout={handleLogout}><Sifarisler /></AdminLayout>} />
