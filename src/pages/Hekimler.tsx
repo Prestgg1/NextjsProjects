@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, MapPin, Phone, Star, Calendar, UserCheck, Upload } from "lucide-react";
+import api, { DoctorCategory } from "@/lib/api";
 
 const hekimler = [
   {
@@ -87,15 +88,105 @@ const hekimler = [
 export default function Hekimler() {
   const [axtar, setAxtar] = useState("");
   const [modalAciq, setModalAciq] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState <DoctorCategory[]>([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.GET('/api/admin/doctor_categories/', {})
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Kategoriyaları yükləmək mümkün deyil:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+ 
   const [yeniHekim, setYeniHekim] = useState({
-    ad: "",
-    telefon: "",
-    tecrube: "",
-    klinika: "",
-    ixtisas: "",
-    sekil: null as File | null
+    name: "",
+    email: "",
+    password: "",
+    clinic: "",
+    about: "",
+    phone: "",
+    image: null as File | null,
+    finCode: "",
+    gender: "",
+    birthday: "",
+    city: "",
+    state: "",
+    country: "",
+    address: "",
+    doctor_category_id: "",
   });
-  
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+   
+      const formData = new FormData();
+    formData.append("file", yeniHekim.image);  // File obyekti
+    formData.append("upload_preset", "learnteach"); // Cloudinary dashboard-dakı preset adı
+
+      const response = await fetch('https://api.cloudinary.com/v1_1/djfeqtwjx/image/upload', {
+        method: 'POST',
+        body: formData,
+    });
+    
+    /* error: Object { message: "Upload preset must be specified when using unsigned upload" } */
+    const data = await response.json();
+    setYeniHekim({ ...yeniHekim, image: data.secure_url });
+    console.log(data);
+  } catch (error) {
+    console.error("Şəkil yükləmək mümkün deyil:", error);
+  }
+  try {
+
+       await api.POST("/api/admin/doctor/register",{
+        body: {
+          name: yeniHekim.name,
+          email: yeniHekim.email,
+          password: yeniHekim.password,
+          clinic: yeniHekim.clinic,
+          about: yeniHekim.about,
+          phone: yeniHekim.phone,
+          image: yeniHekim.image?.toString(),
+          finCode: yeniHekim.finCode,
+          gender: yeniHekim.gender as "male" | "female",
+          birthday: yeniHekim.birthday,
+          city: yeniHekim.city,
+          state: yeniHekim.state,
+          country: yeniHekim.country,
+          address: yeniHekim.address,
+          doctor_category_id: Number(yeniHekim.doctor_category_id),
+        },
+       
+      });
+
+      console.log("Yeni həkim əlavə edildi:", yeniHekim);
+      setModalAciq(false);
+      setYeniHekim({
+        name: "",
+        email: "",
+        password: "",
+        clinic: "",
+        about: "",
+        phone: "",
+        image: null,
+        finCode: "",
+        gender: "",
+        birthday: "",
+        city: "",
+        state: "",
+        country: "",
+        address: "",
+        doctor_category_id: "",
+      });
+    } catch (error) {
+      console.error("Həkim əlavə edilə bilmədi:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const filteredHekimler = hekimler.filter(hekim =>
     hekim.ad.toLowerCase().includes(axtar.toLowerCase()) ||
     hekim.ixtisas.toLowerCase().includes(axtar.toLowerCase()) ||
@@ -113,120 +204,192 @@ export default function Hekimler() {
           </p>
         </div>
         <Dialog open={modalAciq} onOpenChange={setModalAciq}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-pharmacy hover:opacity-90 text-primary-foreground">
-              <Plus className="h-4 w-4 mr-2" />
-              Yeni Həkim
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Yeni Həkim Əlavə Et</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="ad">Ad Soyad</Label>
-                <Input
-                  id="ad"
-                  placeholder="Dr. Ad Soyad"
-                  value={yeniHekim.ad}
-                  onChange={(e) => setYeniHekim({...yeniHekim, ad: e.target.value})}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="sekil">Şəkil</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="sekil"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setYeniHekim({...yeniHekim, sekil: e.target.files?.[0] || null})}
-                    className="hidden"
-                  />
-                  <Label 
-                    htmlFor="sekil" 
-                    className="flex items-center gap-2 px-3 py-2 border rounded-md cursor-pointer hover:bg-accent"
-                  >
-                    <Upload className="h-4 w-4" />
-                    {yeniHekim.sekil ? yeniHekim.sekil.name : "Şəkil seçin"}
-                  </Label>
-                </div>
-              </div>
+      <DialogTrigger asChild>
+        <Button className="bg-gradient-pharmacy hover:opacity-90 text-primary-foreground">
+          <Plus className="h-4 w-4 mr-2" />
+          Yeni Həkim
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Yeni Həkim Əlavə Et</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          {/* Ad Soyad */}
+          <div className="grid gap-2">
+            <Label htmlFor="name">Ad Soyad</Label>
+            <Input
+              id="name"
+              value={yeniHekim.name}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, name: e.target.value })}
+            />
+          </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="telefon">Telefon Nömrəsi</Label>
-                <Input
-                  id="telefon"
-                  placeholder="+994 55 123 4567"
-                  value={yeniHekim.telefon}
-                  onChange={(e) => setYeniHekim({...yeniHekim, telefon: e.target.value})}
-                />
-              </div>
+          {/* Email */}
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={yeniHekim.email}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, email: e.target.value })}
+            />
+          </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="tecrube">Təcrübə</Label>
-                <Input
-                  id="tecrube"
-                  placeholder="10 il"
-                  value={yeniHekim.tecrube}
-                  onChange={(e) => setYeniHekim({...yeniHekim, tecrube: e.target.value})}
-                />
-              </div>
+          {/* Password */}
+          <div className="grid gap-2">
+            <Label htmlFor="password">Şifrə</Label>
+            <Input
+              id="password"
+              type="password"
+              value={yeniHekim.password}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, password: e.target.value })}
+            />
+          </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="klinika">Klinika</Label>
-                <Select value={yeniHekim.klinika} onValueChange={(value) => setYeniHekim({...yeniHekim, klinika: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Klinika seçin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="merkezi-tibb">Mərkəzi Tibb Mərkəzi</SelectItem>
-                    <SelectItem value="saglamlig-klinikasi">Sağlamlıq Klinikası</SelectItem>
-                    <SelectItem value="aile-hekimligi">Aile Həkimliği Mərkəzi</SelectItem>
-                    <SelectItem value="muasir-diaqnostika">Müasir Diaqnostika</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Telefon */}
+          <div className="grid gap-2">
+            <Label htmlFor="phone">Telefon</Label>
+            <Input
+              id="phone"
+              value={yeniHekim.phone}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, phone: e.target.value })}
+            />
+          </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="ixtisas">İxtisas Sahəsi</Label>
-                <Select value={yeniHekim.ixtisas} onValueChange={(value) => setYeniHekim({...yeniHekim, ixtisas: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="İxtisas seçin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kardiologiya">Kardiologiya</SelectItem>
-                    <SelectItem value="ginekologiya">Ginekologiya</SelectItem>
-                    <SelectItem value="nevrologiya">Nevrologiya</SelectItem>
-                    <SelectItem value="pediatriya">Pediatriya</SelectItem>
-                    <SelectItem value="umumi-tebabet">Ümumi təbabət</SelectItem>
-                    <SelectItem value="dermatologiya">Dermatologiya</SelectItem>
-                    <SelectItem value="ortopediya">Ortopediya</SelectItem>
-                    <SelectItem value="oftalmologiya">Oftalmologiya</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setModalAciq(false)}>
-                Ləğv et
-              </Button>
-              <Button 
-                className="bg-gradient-pharmacy hover:opacity-90 text-primary-foreground"
-                onClick={() => {
-                  // Burada yeni həkimi əlavə etmək məntıqı olacaq
-                  console.log("Yeni həkim məlumatları:", yeniHekim);
-                  setModalAciq(false);
-                  setYeniHekim({ad: "", telefon: "", tecrube: "", klinika: "", ixtisas: "", sekil: null});
-                }}
-              >
-                Əlavə et
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+          {/* Şəkil */}
+          <div className="grid gap-2">
+            <Label htmlFor="image">Şəkil</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setYeniHekim({ ...yeniHekim, image: e.target.files?.[0] || null })
+              }
+            />
+          </div>
+
+          {/* FİN kod */}
+          <div className="grid gap-2">
+            <Label htmlFor="finCode">FİN Kodu</Label>
+            <Input
+              id="finCode"
+              value={yeniHekim.finCode}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, finCode: e.target.value })}
+            />
+          </div>
+
+          {/* Gender */}
+          <div className="grid gap-2">
+            <Label>Cinsiyyət</Label>
+            <Select
+              value={yeniHekim.gender}
+              onValueChange={(val) => setYeniHekim({ ...yeniHekim, gender: val })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Kişi</SelectItem>
+                <SelectItem value="female">Qadın</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Birthday */}
+          <div className="grid gap-2">
+            <Label htmlFor="birthday">Doğum tarixi</Label>
+            <Input
+              id="birthday"
+              type="date"
+              value={yeniHekim.birthday}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, birthday: e.target.value })}
+            />
+          </div>
+
+          {/* Clinic */}
+          <div className="grid gap-2">
+            <Label htmlFor="clinic">Klinika</Label>
+            <Input
+              id="clinic"
+              value={yeniHekim.clinic}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, clinic: e.target.value })}
+            />
+          </div>
+
+          {/* About */}
+          <div className="grid gap-2">
+            <Label htmlFor="about">Haqqında</Label>
+            <Input
+              id="about"
+              value={yeniHekim.about}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, about: e.target.value })}
+            />
+          </div>
+
+          {/* Adres */}
+          <div className="grid gap-2">
+            <Label htmlFor="address">Ünvan</Label>
+            <Input
+              id="address"
+              value={yeniHekim.address}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, address: e.target.value })}
+            />
+          </div>
+
+          {/* City / State / Country */}
+          <div className="grid grid-cols-3 gap-2">
+            <Input
+              placeholder="Şəhər"
+              value={yeniHekim.city}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, city: e.target.value })}
+            />
+            <Input
+              placeholder="Rayon"
+              value={yeniHekim.state}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, state: e.target.value })}
+            />
+            <Input
+              placeholder="Ölkə"
+              value={yeniHekim.country}
+              onChange={(e) => setYeniHekim({ ...yeniHekim, country: e.target.value })}
+            />
+          </div>
+
+          {/* İxtisas (category select) */}
+          <div className="grid gap-2">
+            <Label htmlFor="doctor_category_id">İxtisas</Label>
+            <Select
+              value={yeniHekim.doctor_category_id}
+              onValueChange={(val) => setYeniHekim({ ...yeniHekim, doctor_category_id: val })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id.toString()}>
+                    {c.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setModalAciq(false)}>Ləğv et</Button>
+          <Button 
+            className="bg-gradient-pharmacy hover:opacity-90 text-primary-foreground"
+            disabled={loading}
+            onClick={handleSubmit}
+          >
+            {loading ? "Yüklənir..." : "Əlavə et"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
       </div>
 
       {/* Search and stats */}
